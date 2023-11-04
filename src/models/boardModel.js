@@ -5,6 +5,7 @@ import { GET_DB } from '~/config/mongodb'
 import { BOARD_TYPES } from '~/utils/constants'
 import { columnModel } from './columnModel'
 import { cardModel } from './cardModel'
+import { after } from 'lodash'
 
 // Define Collection (name & schema)
 const BOARD_COLLECTION_NAME = 'boards'
@@ -80,10 +81,34 @@ const getDetails = async (id) => {
   }
 }
 
+// Push một cái giá trị columnId vào cuối mảng columnOrderIds
+const pushColumnOrderIds = async (column) => {
+  try {
+    const result = await GET_DB().collection(BOARD_COLLECTION_NAME).findOneAndUpdate(
+      {
+        _id: new ObjectId(column.boardId)
+      },
+      {
+        $push: {
+          columnOrderIds: new ObjectId(column._id)
+        }
+      },
+      {
+        returnDocument: 'after'
+      }
+    )
+
+    return result.value
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
 export const boardModel = {
   BOARD_COLLECTION_NAME,
   BOARD_COLLECTION_SCHEMA,
   createNew,
   findOneByID,
-  getDetails
+  getDetails,
+  pushColumnOrderIds
 }
